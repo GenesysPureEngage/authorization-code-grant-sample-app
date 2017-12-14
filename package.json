@@ -1,0 +1,30 @@
+{
+  "name": "authorization-code-grant-sample-app",
+  "version": "1.0.0",
+  "description": "authorization code grant sample application",
+  "main": "src/main.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GenesysPureEngage/authorization-code-grant-sample-app.git"
+  },
+  "keywords": [
+    "sample",
+    "genesys",
+    "authorization"
+  ],
+  "author": "",
+  "license": "MIT",
+  "homepage": "https://github.com/GenesysPureEngage/authorization-code-grant-sample-app#readme",
+  "scripts": {
+    "start": "node src/main.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "genesys-authorization-client-js": "latest",
+    "morgan": "^1.9.0",
+    "request": "^2.83.0",
+    "serve-static": "^1.13.1"
+  },
+  "devDependencies": {}
+}
