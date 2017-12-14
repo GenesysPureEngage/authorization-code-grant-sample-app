@@ -14,7 +14,9 @@ const port = 8080;
 
 request = request.defaults({
     jar: true,
-    'x-api-key': apiKey
+    headers: {
+        'x-api-key': apiKey
+    }
 });
 
 function isSuccess(response) {
