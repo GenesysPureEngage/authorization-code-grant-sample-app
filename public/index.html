@@ -1,0 +1,35 @@
+<html>
+    <head>
+        <title>Authorization code grant sample application</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    </head>
+    <body>
+        <h2>Authorization code grant sample</h2>
+        <div id="app-state">
+            <div class="app-state-label">Current State: </div>
+            <div class="app-state-value"></div>
+        </div>
+        <div>
+            <button name="login">login</button>
+            <button name="logout">logout</button>
+        </div>        
+        <script type="text/javascript">
+            setInterval(()=> {
+                $.getJSON('/info', data => {
+                    const value = JSON.stringify(data);
+                    $('#app-state .app-state-value').text(value); 
+                });
+            }, 1000);
+            
+            $('button[name=login]').click(() => {
+               window.location = '/login';
+            });
+            
+            $('button[name=logout]').click(() => {
+               $.post('/logout');
+            });
+        </script>
+    </body>
+</html>

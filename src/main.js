@@ -1,8 +1,12 @@
 const express = require('express');
+const serveStatic = require('serve-static');
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
 const path = require('path');
 const url = require('url');
+const workspace = require('genesys-workspace-client-js');
+const authentication = require('genesys-authentication-client-js');
+
 let request = require('request');
 
 const app = express();
@@ -10,60 +14,67 @@ const routes = express.Router();
 
 const apiUrl = "<apiUrl>";
 const apiKey = "<apiKey>";
+const clientId = "<clientId>";
 const port = 8080;
 
-request = request.defaults({
-    jar: true,
-    headers: {
-        'x-api-key': apiKey
-    }
+const state = {
+    current: 'Logged out'
+};
+
+const authClient = new authentication.ApiClient();
+authClient.basePath = `${apiUrl}/auth/v3`;
+authClient.defaultHeaders = {
+  'x-api-key': apiKey
+};
+
+const workspaceApi = new workspace(apiKey, apiUrl);
+
+routes.get('/info', (req, res) => {
+    const user = workspaceApi.user;
+    const value = {
+        state: state.current,
+        user: user
+    };
+    
+    res.send(value);
 });
 
-function isSuccess(response) {
-    return response.statusCode === 200;
-}
-
-routes.get('/user', (req, res) => {
-    request.get(`${apiUrl}/workspace/v3/current-session`, (err, response, body) => {
-        if(err) {
-            console.error(err);
-            res.send(err);
-        }
-        else if(isSuccess(response)) {
-            res.send(body);
-        }
-        else {
-            res.redirect(401, '/login');
-        }        
+routes.get('/initialize', (req, res) => {
+    const code = req.query.code;
+    
+    state.current = 'Initializing';
+    state.code = code;
+    
+    workspaceApi.initialize({code: code, redirectUri: state.redirectUri}).then( () => {
+        state.current = 'Logged in';
+    }).catch(err => {
+        console.error(err);
+        state.current = 'Error';
     });
+    
+    res.redirect('/');
 });
 
 routes.get('/login', (req, res) => {
-    const code = req.query.code;
-    const redirectUri = `${req.protocol}://${req.hostname}:${port}${req.path}`;
-    if(code) {
-        request.get(`${apiUrl}/workspace/v3/login?redirect_uri=${redirectUri}&code=${code}`, (err, response, body) => {
-            if(err) {
-                console.error(err);
-                res.send(err);
-            }
-            else if(isSuccess(response)) {
-                console.log(body);
-                res.redirect('/user');
-            }
-            else {
-                res.send(body);
-            }
-        });
-    }    
-    else {
-        res.redirect(`${apiUrl}/workspace/v3/login?redirect_uri=${redirectUri}`);
-    }
+    const redirectUri = `${req.protocol}://${req.hostname}:${port}/initialize`;
+    state.redirectUri = redirectUri;
+    
+    const authLoginPage = `${apiUrl}/auth/v3/oauth/authorize?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}`;
+    res.redirect(authLoginPage);
+});
+
+routes.post('/logout', (req, res) => {
+    state.current = 'Logged out';
+    workspaceApi.destroy();
 });
 
 routes.get('/*', (req, res) => {
-   res.redirect('/user'); 
+   res.redirect('/');
 });
+
+app.use(express.static('public', {
+    extensions: ['html', 'htm']
+}));
 
 app.use(morgan('dev'));
 app.use(bodyParser.json());
