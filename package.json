@@ -21,10 +21,10 @@
   "dependencies": {
     "body-parser": "^1.18.2",
     "express": "^4.16.2",
-    "genesys-authorization-client-js": "latest",
     "morgan": "^1.9.0",
     "request": "^2.83.0",
-    "serve-static": "^1.13.1"
+    "genesys-authentication-client-js": "latest",
+    "genesys-workspace-client-js": "latest"
   },
   "devDependencies": {}
 }
